@@ -22,7 +22,7 @@ var tdamToken *TokenResponse
 // TODO: this sets the token globally!
 // eventually, this will need to be stored in a user session
 // so multiple people can use the app with their own authentication
-func SetToken(token *TokenResponse) error {
+func (c *Client) SetToken(token *TokenResponse) error {
 	// store the access token (bearer token) in memory,
 	// write the refresh token to disk to use on subsequent runs
 	tdamToken = token
@@ -50,7 +50,7 @@ var authMutex sync.Mutex
 // gets the active access token if available
 // if not, looks for refresh token on disk and attempts to refresh
 // if not, push through oauth flow
-func TDAMToken() (string, error) {
+func (c *Client) TDAMToken() (string, error) {
 	// synchronizing this so we don't infinitely spawn browser windows
 	authMutex.Lock()
 	defer authMutex.Unlock()
@@ -63,10 +63,10 @@ func TDAMToken() (string, error) {
 		fmt.Printf("Error fetching refresh token\n")
 		return "", err
 	}
-	tdamToken, err = refreshToken(refresh)
+	tdamToken, err = c.refreshToken(refresh)
 	if err != nil {
 		fmt.Printf("Error refreshing token: %s\n", err)
-		fmt.Printf("To obtain a new token, visit %s\n", TdamAuthURL())
+		fmt.Printf("To obtain a new token, visit %s\n", c.TdamAuthURL())
 		//exec.Command("open", tdamAuthURL()).Run()
 		//time.Sleep(10 * time.Second)
 		return "", err
@@ -75,8 +75,8 @@ func TDAMToken() (string, error) {
 	return tdamToken.AccessToken, nil
 }
 
-func TdamAuthURL() string {
-	return fmt.Sprintf("https://auth.tdameritrade.com/oauth?client_id=%s&response_type=code&redirect_uri=%s", ConsumerKey, "https://localhost:8443/auth")
+func (c *Client) TdamAuthURL() string {
+	return fmt.Sprintf("https://auth.tdameritrade.com/oauth?client_id=%s&response_type=code&redirect_uri=%s", c.ConsumerKey, "https://localhost:8443/auth")
 }
 
 func getStoredRefreshToken() (string, error) {
@@ -112,16 +112,16 @@ type TokenResponse struct {
 	refreshTokenExpiresIn int `json:"refresh_token_expires_in"`
 }
 
-func AuthHandler(w http.ResponseWriter, req *http.Request) {
+func (c *Client) AuthHandler(w http.ResponseWriter, req *http.Request) {
 	code := req.URL.Query().Get("code")
 
-	token, err := getToken(code)
+	token, err := c.getToken(code)
 	if err != nil {
 		log.Printf("Error getting token: %v\n", err)
 	}
 
 	w.Header().Set("Content-Type", "text/plain")
-	if err := SetToken(token); err != nil {
+	if err := c.SetToken(token); err != nil {
 		fmt.Printf("error setting token: %v\n", err)
 		fmt.Fprintf(w, "error setting token: %v\n", err)
 	} else {
@@ -129,7 +129,7 @@ func AuthHandler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func getToken(code string) (*TokenResponse, error) {
+func (c *Client) getToken(code string) (*TokenResponse, error) {
 	transport := &http.Transport{TLSClientConfig: &tls.Config{}}
 	client := &http.Client{Transport: transport}
 
@@ -137,7 +137,7 @@ func getToken(code string) (*TokenResponse, error) {
 		"grant_type":   []string{"authorization_code"},
 		"access_type":  []string{"offline"},
 		"code":         []string{code},
-		"client_id":    []string{ConsumerKey},
+		"client_id":    []string{c.ConsumerKey},
 		"redirect_uri": []string{"https://localhost:8443/auth"},
 	}
 
@@ -165,7 +165,7 @@ func getToken(code string) (*TokenResponse, error) {
 	return &token, err
 }
 
-func refreshToken(code string) (*TokenResponse, error) {
+func (c *Client) refreshToken(code string) (*TokenResponse, error) {
 	transport := &http.Transport{TLSClientConfig: &tls.Config{}}
 	client := &http.Client{Transport: transport}
 
@@ -173,7 +173,7 @@ func refreshToken(code string) (*TokenResponse, error) {
 		"grant_type":    []string{"refresh_token"},
 		"access_type":   []string{"offline"},
 		"refresh_token": []string{code},
-		"client_id":     []string{ConsumerKey},
+		"client_id":     []string{c.ConsumerKey},
 		"redirect_uri":  []string{"https://localhost:8443/auth"},
 	}
 

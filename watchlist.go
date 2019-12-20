@@ -32,8 +32,8 @@ type WatchlistInstrument struct {
 	AssetType   string `json:"assetType"`
 }
 
-func GetWatchlists() ([]Watchlist, error) {
-	token, err := TDAMToken()
+func (c *Client) GetWatchlists() ([]Watchlist, error) {
+	token, err := c.TDAMToken()
 	if err != nil {
 		return nil, err
 	}

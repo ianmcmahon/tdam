@@ -10,6 +10,7 @@ import (
 )
 
 type Scanner struct {
+	*Client
 	Authenticated bool
 }
 
@@ -88,13 +89,13 @@ func (s *Scanner) GetChain(symbol string, options url.Values) (*OptionChain, err
 		options = req.URL.Query()
 	}
 	if s.Authenticated {
-		token, err := TDAMToken()
+		token, err := s.TDAMToken()
 		if err != nil {
 			return nil, err
 		}
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	} else {
-		options.Set("apikey", ConsumerKey)
+		options.Set("apikey", s.ConsumerKey)
 	}
 	options.Set("symbol", symbol)
 	req.URL.RawQuery = options.Encode()

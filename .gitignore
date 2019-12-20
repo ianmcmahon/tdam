@@ -1,4 +1,5 @@
-secret.go
+# text editor temp files
+.*.swp
 
 # Binaries for programs and plugins
 *.exe
