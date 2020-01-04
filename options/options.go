@@ -11,6 +11,10 @@ import (
 	"github.com/ianmcmahon/tdam"
 )
 
+type Client struct {
+	*tdam.Client
+}
+
 func dte(min, max int) (from, to string) {
 	now := time.Now()
 	near := now.Add(time.Duration(min) * time.Hour * 24)
@@ -32,7 +36,7 @@ func Single(strikes, fromDTE, toDTE int) url.Values {
 	return options
 }
 
-func GetChain(symbol string, options url.Values) (*OptionChain, error) {
+func (c *Client) GetChain(symbol string, options url.Values) (*OptionChain, error) {
 	transport := &http.Transport{TLSClientConfig: &tls.Config{}}
 	client := &http.Client{Transport: transport}
 
@@ -44,13 +48,13 @@ func GetChain(symbol string, options url.Values) (*OptionChain, error) {
 		options = req.URL.Query()
 	}
 	if false { //s.Authenticated {
-		token, err := tdam.TDAMToken()
+		token, err := c.TDAMToken()
 		if err != nil {
 			return nil, err
 		}
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	} else {
-		options.Set("apikey", tdam.ConsumerKey)
+		options.Set("apikey", c.ConsumerKey)
 	}
 	options.Set("symbol", symbol)
 	req.URL.RawQuery = options.Encode()
