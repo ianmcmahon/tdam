@@ -3,7 +3,7 @@ on: [push]
 jobs:
 
   lint:
-    name: Lint Backend
+    name: Lint 
     runs-on: ubuntu-latest
     steps:
 
@@ -16,7 +16,7 @@ jobs:
         args: run
 
   test:
-    name: Test Backend
+    name: Test
     runs-on: ubuntu-latest
     steps:
 
@@ -32,7 +32,7 @@ jobs:
       run: go test -v ./...
 
   build:
-    name: Build Backend
+    name: Build
     runs-on: ubuntu-latest
     needs: [test]
     steps:
