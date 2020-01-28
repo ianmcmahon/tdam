@@ -100,7 +100,7 @@ func getConfigDir() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return path.Join(homeDir, ".optionbuddy"), nil
+	return path.Join(homeDir, ".tdam"), nil
 }
 
 type TokenResponse struct {
