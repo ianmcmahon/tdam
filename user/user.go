@@ -119,8 +119,8 @@ type UserPrincipal struct {
 	Accounts                 []UPAccount       `json:"accounts"`
 }
 
-func GetUserPrincipals() (*UserPrincipal, error) {
-	token, err := tdam.TDAMToken()
+func GetUserPrincipals(c *tdam.Client) (*UserPrincipal, error) {
+	token, err := c.TDAMToken()
 	if err != nil {
 		return nil, err
 	}

@@ -51,6 +51,9 @@ var authMutex sync.Mutex
 // if not, looks for refresh token on disk and attempts to refresh
 // if not, push through oauth flow
 func (c *Client) TDAMToken() (string, error) {
+	if c == nil {
+		return "", fmt.Errorf("can't get a token with a nil client!")
+	}
 	// synchronizing this so we don't infinitely spawn browser windows
 	authMutex.Lock()
 	defer authMutex.Unlock()
@@ -76,7 +79,7 @@ func (c *Client) TDAMToken() (string, error) {
 }
 
 func (c *Client) TdamAuthURL() string {
-	return fmt.Sprintf("https://auth.tdameritrade.com/oauth?client_id=%s&response_type=code&redirect_uri=%s", c.ConsumerKey, "https://localhost:8443/auth")
+	return fmt.Sprintf("https://auth.tdameritrade.com/oauth?client_id=%s@AMER.OAUTHAP&response_type=code&redirect_uri=%s", c.ConsumerKey, "https://localhost:8443/auth")
 }
 
 func getStoredRefreshToken() (string, error) {
@@ -166,6 +169,9 @@ func (c *Client) getToken(code string) (*TokenResponse, error) {
 }
 
 func (c *Client) refreshToken(code string) (*TokenResponse, error) {
+	if c == nil {
+		return nil, fmt.Errorf("can't get a token with a nil client!")
+	}
 	transport := &http.Transport{TLSClientConfig: &tls.Config{}}
 	client := &http.Client{Transport: transport}
 

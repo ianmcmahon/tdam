@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/ianmcmahon/tdam"
 	"github.com/ianmcmahon/tdam/user"
 )
 
@@ -17,6 +18,7 @@ type responseCallback func(resp response)
 type dataCallback func(resp Data)
 
 type Streamer struct {
+	tdamClient   *tdam.Client
 	principal    *user.UserPrincipal
 	conn         *websocket.Conn
 	done         chan bool
@@ -38,12 +40,13 @@ func (s *Streamer) nextRequest() int {
 	return cnt
 }
 
-func New() (*Streamer, error) {
-	up, err := user.GetUserPrincipals()
+func New(client *tdam.Client) (*Streamer, error) {
+	up, err := user.GetUserPrincipals(client)
 	if err != nil {
 		return nil, err
 	}
 	s := &Streamer{
+		tdamClient:        client,
 		principal:         up,
 		done:              make(chan bool, 0),
 		requestCount:      0,
@@ -67,6 +70,10 @@ func New() (*Streamer, error) {
 
 func (s *Streamer) Run() error {
 	var err error
+
+	if s == nil {
+		return fmt.Errorf("streamer is nil!?")
+	}
 
 	if s.principal == nil {
 		return fmt.Errorf("No user principal!")

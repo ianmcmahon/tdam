@@ -1,20 +1,26 @@
 package tdam
 
+import "fmt"
+
 type AccountType string
 type InstrumentType string
+type Symbol string
 
 const (
 	CASH   AccountType = "CASH"
 	MARGIN             = "MARGIN"
 
-	OPTION          InstrumentType = "Option"
-	MUTUAL_FUND                    = "MutualFund"
-	CASH_EQUIVALENT                = "CashEquivalent"
-	EQUITY                         = "Equity"
-	FIXED_INCOME                   = "FixedIncome"
+	OPTION          InstrumentType = "OPTION"
+	MUTUAL_FUND                    = "MUTUAL_FUND"
+	CASH_EQUIVALENT                = "CASH_EQUIVALENT"
+	EQUITY                         = "EQUITY"
+	INDEX                          = "INDEX"
+	FIXED_INCOME                   = "FIXED_INCOME"
+	CURRENCY                       = "CURRENCY"
 )
 
 type Account struct {
+	*Client
 	SecuritiesAccount `json:"securitiesAccount"`
 }
 
@@ -24,27 +30,41 @@ type SecuritiesAccount struct {
 	RoundTrips              int         `json:"roundTrips"`
 	IsDayTrader             bool        `json:"isDayTrader"`
 	IsClosingOnlyRestricted bool        `json:"isClosingOnlyRestricted"`
-	Positions               []Position  `json:"positions"`
+	RawPositions            []*Position `json:"positions"`
 	InitialBalances         Balances    `json:"initialBalances"`
 	CurrentBalances         Balances    `json:"currentBalances"`
 	ProjectedBalances       Balances    `json:"projectedBalances"`
 	//OrderStrategies         []OrderStrategy `json:"orderStrategies"`
 }
 
-type Position struct {
-	ShortQuantity                  float64    `json:"shortQuantity"`
-	AveragePrice                   float64    `json:"averagePrice"`
-	CurrentDayProfitLoss           float64    `json:"currentDayProfitLoss"`
-	CurrentDayProfitLossPercentage float64    `json:"currentDayProfitLossPercentage"`
-	LongQuantity                   float64    `json:"longQuantity"`
-	SettledLongQuantity            float64    `json:"settledLongQuantity"`
-	SettledShortQuantity           float64    `json:"settledShortQuantity"`
-	AgedQuantity                   float64    `json:"agedQuantity"`
-	Instrument                     Instrument `json:"instrument"`
-	MarketValue                    float64    `json:"marketValue"`
+func (a SecuritiesAccount) Positions() map[Symbol][]*Position {
+	out := make(map[Symbol][]*Position)
+	for _, p := range a.RawPositions {
+		sym := p.Instrument.UnderlyingSymbol
+		if _, ok := out[sym]; !ok {
+			out[sym] = make([]*Position, 0)
+		}
+		out[sym] = append(out[sym], p)
+	}
+	return out
 }
 
-type Instrument interface{}
+type Position struct {
+	ShortQuantity                  float64     `json:"shortQuantity"`
+	AveragePrice                   float64     `json:"averagePrice"`
+	CurrentDayProfitLoss           float64     `json:"currentDayProfitLoss"`
+	CurrentDayProfitLossPercentage float64     `json:"currentDayProfitLossPercentage"`
+	LongQuantity                   float64     `json:"longQuantity"`
+	SettledLongQuantity            float64     `json:"settledLongQuantity"`
+	SettledShortQuantity           float64     `json:"settledShortQuantity"`
+	AgedQuantity                   float64     `json:"agedQuantity"`
+	Instrument                     *Instrument `json:"instrument"`
+	MarketValue                    float64     `json:"marketValue"`
+}
+
+func (p Position) String() string {
+	return fmt.Sprintf("%g %s %.2f", p.LongQuantity-p.ShortQuantity, p.Instrument, p.MarketValue)
+}
 
 type Balances struct {
 	AccruedInterest              float64 `json:"accruedInterest"`

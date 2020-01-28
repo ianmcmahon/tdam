@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
-func (c *Client) GetAccounts() ([]*Account, error) {
-	token, err := c.TDAMToken()
+func (a *Account) TradeHistory(symbol Symbol) ([]Transaction, error) {
+	token, err := a.TDAMToken()
 	if err != nil {
 		return nil, err
 	}
@@ -17,15 +18,18 @@ func (c *Client) GetAccounts() ([]*Account, error) {
 	transport := &http.Transport{TLSClientConfig: &tls.Config{}}
 	client := &http.Client{Transport: transport}
 
-	req, err := http.NewRequest("GET", "https://api.tdameritrade.com/v1/accounts", nil)
+	endpoint := fmt.Sprintf("https://api.tdameritrade.com/v1/accounts/%s/transactions", a.AccountId)
+	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
 	query := req.URL.Query()
-	query.Add("fields", "positions")
-	query.Add("fields", "orders")
+	query.Add("type", "TRADE")
+	query.Add("symbol", string(symbol))
+	query.Add("startDate", "2019-10-01")
+	query.Add("endDate", time.Now().Format("2006-01-02"))
 	req.URL.RawQuery = query.Encode()
 	resp, err := client.Do(req)
 	if err != nil {
@@ -43,19 +47,10 @@ func (c *Client) GetAccounts() ([]*Account, error) {
 		fmt.Printf("%s\n", dump)
 	*/
 
-	var accounts []*Account
-	if err := json.NewDecoder(resp.Body).Decode(&accounts); err != nil {
+	var transactions []Transaction
+	if err := json.NewDecoder(resp.Body).Decode(&transactions); err != nil {
 		return nil, err
 	}
 
-	for _, a := range accounts {
-		a.Client = c
-		for _, p := range a.RawPositions {
-			if err := p.Instrument.populateFromSymbol(); err != nil {
-				fmt.Printf("error populating instrument: %v", err)
-			}
-		}
-	}
-
-	return accounts, nil
+	return transactions, nil
 }
