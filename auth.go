@@ -83,6 +83,10 @@ func (c *Client) TdamAuthURL() string {
 }
 
 func getStoredRefreshToken() (string, error) {
+	envToken := os.Getenv("REFRESH_TOKEN")
+	if envToken != "" {
+		return envToken, nil
+	}
 	configDir, err := getConfigDir()
 	if err != nil {
 		return "", err
