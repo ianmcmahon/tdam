@@ -38,7 +38,7 @@ func (c *Client) SetToken(token *TokenResponse) error {
 
 	f, err := os.Create(path.Join(configDir, "tdam_refresh"))
 	if err != nil {
-		return nil
+		return err
 	}
 	defer f.Close()
 	_, err = f.Write([]byte(token.RefreshToken))
