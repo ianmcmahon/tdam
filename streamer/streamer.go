@@ -14,6 +14,17 @@ import (
 	"github.com/ianmcmahon/tdam/user"
 )
 
+const (
+	QOSExpress  QoSLevel = "0" // 500 ms
+	QOSRealTime QoSLevel = "1" // 750 ms
+	QOSFast     QoSLevel = "2" // 1000ms
+	QOSModerate QoSLevel = "3" // 1500ms
+	QOSSlow     QoSLevel = "4" // 3000 ms
+	QOSDelayed  QoSLevel = "5" // 3000 ms
+
+)
+
+type QoSLevel string
 type responseCallback func(resp response)
 type dataCallback func(resp Data)
 
@@ -107,6 +118,63 @@ func (s *Streamer) Run() error {
 	}
 
 	return nil
+}
+
+func (s *Streamer) QoS(level QoSLevel) error {
+
+	if err := s.sendRequest(s.qosRequest(level), func(resp response) {
+	}); err != nil {
+		log.Printf("error sending qos request: %v\n", err)
+		return err
+	}
+	return nil
+}
+
+func (s *Streamer) qosRequest(level QoSLevel) request {
+
+	loginReq := request{
+		Service:   "ADMIN",
+		Command:   "QOS",
+		RequestID: s.nextRequest(),
+		Account:   s.principal.Accounts[0].AccountId,
+		Source:    s.principal.StreamerInfo.AppId,
+		Parameters: map[string]string{
+			"qoslevel": string(level),
+		},
+	}
+
+	return loginReq
+}
+
+func (s *Streamer) Stop() error {
+
+	if err := s.sendRequest(s.logoutRequest(), func(resp response) {
+		code := resp.Content["code"]
+
+		if v, ok := code.(float64); ok && v == 0.0 {
+			fmt.Printf("Logout: code: %T %v\n", code, code)
+			s.done <- true
+		}
+	}); err != nil {
+		log.Printf("error sending logout request: %v\n", err)
+		return err
+	}
+
+	return nil
+}
+
+func (s *Streamer) logoutRequest() request {
+
+	logoutReq := request{
+		Service:    "ADMIN",
+		Command:    "LOGOUT",
+		RequestID:  s.nextRequest(),
+		Account:    s.principal.Accounts[0].AccountId,
+		Source:     s.principal.StreamerInfo.AppId,
+		Parameters: map[string]string{},
+	}
+
+	return logoutReq
 }
 
 func (s *Streamer) handleIncoming() {
