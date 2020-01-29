@@ -27,7 +27,7 @@ type OptionChain struct {
 
 func (c *OptionChain) ExpirationDates() []ExpirationDate {
 	out := []ExpirationDate{}
-	for exp, _ := range c.RawCalls {
+	for exp := range c.RawCalls {
 		out = append(out, exp)
 	}
 	sort.Sort(byDTE(out))
@@ -40,7 +40,7 @@ func (c *OptionChain) StrikeTable(exp ExpirationDate) StrikeTable {
 	putMap := c.RawPuts[exp]
 	callMap := c.RawCalls[exp]
 
-	for price, _ := range callMap {
+	for price := range callMap {
 		table = append(table, Strike{
 			Price: price,
 			Call:  callMap[price],

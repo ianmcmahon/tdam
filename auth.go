@@ -41,8 +41,8 @@ func (c *Client) SetToken(token *TokenResponse) error {
 		return nil
 	}
 	defer f.Close()
-	f.Write([]byte(token.RefreshToken))
-	return nil
+	_, err = f.Write([]byte(token.RefreshToken))
+	return err
 }
 
 var authMutex sync.Mutex
@@ -111,8 +111,8 @@ type TokenResponse struct {
 	TokenType     string    `json:"token_type"`
 	Error         string    `json:"error,omitempty"`
 
-	expiresIn             int `json:"expires_in"`
-	refreshTokenExpiresIn int `json:"refresh_token_expires_in"`
+	ExpiresIn             int `json:"expires_in"`
+	RefreshTokenExpiresIn int `json:"refresh_token_expires_in"`
 }
 
 func (c *Client) AuthHandler(w http.ResponseWriter, req *http.Request) {
@@ -162,8 +162,8 @@ func (c *Client) getToken(code string) (*TokenResponse, error) {
 		return nil, err
 	}
 
-	token.AccessExpiry = time.Now().Add(time.Duration(token.expiresIn) * time.Second)
-	token.RefreshExpiry = time.Now().Add(time.Duration(token.refreshTokenExpiresIn) * time.Second)
+	token.AccessExpiry = time.Now().Add(time.Duration(token.ExpiresIn) * time.Second)
+	token.RefreshExpiry = time.Now().Add(time.Duration(token.RefreshTokenExpiresIn) * time.Second)
 
 	return &token, err
 }
@@ -205,8 +205,8 @@ func (c *Client) refreshToken(code string) (*TokenResponse, error) {
 		return &token, fmt.Errorf("%s", token.Error)
 	}
 
-	token.AccessExpiry = time.Now().Add(time.Duration(token.expiresIn) * time.Second)
-	token.RefreshExpiry = time.Now().Add(time.Duration(token.refreshTokenExpiresIn) * time.Second)
+	token.AccessExpiry = time.Now().Add(time.Duration(token.ExpiresIn) * time.Second)
+	token.RefreshExpiry = time.Now().Add(time.Duration(token.RefreshTokenExpiresIn) * time.Second)
 
 	return &token, err
 }

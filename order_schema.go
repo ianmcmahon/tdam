@@ -4,7 +4,7 @@ type Order struct {
 	Session                  string               `json:"session"`   // 'NORMAL' or 'AM' or 'PM' or 'SEAMLESS'
 	Duration                 string               `json:"duration"`  //: "'DAY' or 'GOOD_TILL_CANCEL' or 'FILL_OR_KILL'",
 	OrderType                string               `json:"orderType"` //: "'MARKET' or 'LIMIT' or 'STOP' or 'STOP_LIMIT' or 'TRAILING_STOP' or 'MARKET_ON_CLOSE' or 'EXERCISE' or 'TRAILING_STOP_LIMIT' or 'NET_DEBIT' or 'NET_CREDIT' or 'NET_ZERO'",
-	CancelTime               interface{}          `json:  "cancelTime"`
+	CancelTime               interface{}          `json:"cancelTime"`
 	ComplexOrderStrategyType string               `json:"complexOrderStrategyType"` // 'NONE' or 'COVERED' or 'VERTICAL' or 'BACK_RATIO' or 'CALENDAR' or 'DIAGONAL' or 'STRADDLE' or 'STRANGLE' or 'COLLAR_SYNTHETIC' or 'BUTTERFLY' or 'CONDOR' or 'IRON_CONDOR' or 'VERTICAL_ROLL' or 'COLLAR_WITH_STOCK' or 'DOUBLE_DIAGONAL' or 'UNBALANCED_BUTTERFLY' or 'UNBALANCED_CONDOR' or 'UNBALANCED_IRON_CONDOR' or 'UNBALANCED_VERTICAL_ROLL' or 'CUSTOM'
 	Quantity                 int                  `json:"quantity"`
 	FilledQuantity           int                  `json:"filledQuantity"`
@@ -44,17 +44,17 @@ type Order struct {
 	    {}
 	  ],
 	*/
-	statusDescription string `json:"statusDescription"` // string
+	StatusDescription string `json:"statusDescription"` // string
 }
 
 type OrderLegCollection struct {
-	orderLegType   string `json:"orderLegType"` // 'EQUITY' or 'OPTION' or 'INDEX' or 'MUTUAL_FUND' or 'CASH_EQUIVALENT' or 'FIXED_INCOME' or 'CURRENCY'
-	legId          int    `json:"legId"`
-	instrument     string `json:"instrument"`     // The type <Instrument> has the following subclasses [Option, MutualFund, CashEquivalent, Equity, FixedIncome] descriptions are listed below\"
-	instruction    string `json:"instruction"`    // 'BUY' or 'SELL' or 'BUY_TO_COVER' or 'SELL_SHORT' or 'BUY_TO_OPEN' or 'BUY_TO_CLOSE' or 'SELL_TO_OPEN' or 'SELL_TO_CLOSE' or 'EXCHANGE'
-	positionEffect string `json:"positionEffect"` // 'OPENING' or 'CLOSING' or 'AUTOMATIC'
-	quantity       int    `json:"quantity"`
-	quantityType   string `json:"quantityType"` // 'ALL_SHARES' or 'DOLLARS' or 'SHARES'
+	OrderLegType   string `json:"orderLegType"` // 'EQUITY' or 'OPTION' or 'INDEX' or 'MUTUAL_FUND' or 'CASH_EQUIVALENT' or 'FIXED_INCOME' or 'CURRENCY'
+	LegId          int    `json:"legId"`
+	Instrument     string `json:"instrument"`     // The type <Instrument> has the following subclasses [Option, MutualFund, CashEquivalent, Equity, FixedIncome] descriptions are listed below\"
+	Instruction    string `json:"instruction"`    // 'BUY' or 'SELL' or 'BUY_TO_COVER' or 'SELL_SHORT' or 'BUY_TO_OPEN' or 'BUY_TO_CLOSE' or 'SELL_TO_OPEN' or 'SELL_TO_CLOSE' or 'EXCHANGE'
+	PositionEffect string `json:"positionEffect"` // 'OPENING' or 'CLOSING' or 'AUTOMATIC'
+	Quantity       int    `json:"quantity"`
+	QuantityType   string `json:"quantityType"` // 'ALL_SHARES' or 'DOLLARS' or 'SHARES'
 }
 
 /*

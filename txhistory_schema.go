@@ -19,7 +19,7 @@ func (e TDTime) UnmarshalJSON(b []byte) (err error) {
 	s = s[1 : len(s)-1]
 
 	t, err := time.Parse("2006-01-02T15:04:05-0700", s)
-	if err != nil {
+	if err == nil {
 		e = TDTime(t)
 	}
 	return
@@ -30,7 +30,7 @@ type Expiration TDTime
 func (e Expiration) UnmarshalJSON(b []byte) (err error) {
 	t := TDTime(e)
 	err = t.UnmarshalJSON(b)
-	if err != nil {
+	if err == nil {
 		e = Expiration(t)
 	}
 	return

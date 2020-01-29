@@ -8,15 +8,15 @@ type Symbol string
 
 const (
 	CASH   AccountType = "CASH"
-	MARGIN             = "MARGIN"
+	MARGIN AccountType = "MARGIN"
 
 	OPTION          InstrumentType = "OPTION"
-	MUTUAL_FUND                    = "MUTUAL_FUND"
-	CASH_EQUIVALENT                = "CASH_EQUIVALENT"
-	EQUITY                         = "EQUITY"
-	INDEX                          = "INDEX"
-	FIXED_INCOME                   = "FIXED_INCOME"
-	CURRENCY                       = "CURRENCY"
+	MUTUAL_FUND     InstrumentType = "MUTUAL_FUND"
+	CASH_EQUIVALENT InstrumentType = "CASH_EQUIVALENT"
+	EQUITY          InstrumentType = "EQUITY"
+	INDEX           InstrumentType = "INDEX"
+	FIXED_INCOME    InstrumentType = "FIXED_INCOME"
+	CURRENCY        InstrumentType = "CURRENCY"
 )
 
 type Account struct {

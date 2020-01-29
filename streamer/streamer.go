@@ -48,7 +48,7 @@ func New(client *tdam.Client) (*Streamer, error) {
 	s := &Streamer{
 		tdamClient:        client,
 		principal:         up,
-		done:              make(chan bool, 0),
+		done:              make(chan bool),
 		requestCount:      0,
 		wg:                &sync.WaitGroup{},
 		responseCallbacks: make(map[int]responseCallback),

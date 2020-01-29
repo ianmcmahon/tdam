@@ -29,7 +29,7 @@ type responseWrapper struct {
 }
 
 type notify struct {
-	Heartbeat wsTimestamp `json:"heartbeat,string"`
+	Heartbeat wsTimestamp `json:"heartbeat"`
 }
 
 type response struct {

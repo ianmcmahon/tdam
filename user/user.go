@@ -113,7 +113,7 @@ type UserPrincipal struct {
 	AccessLevel              string            `json:"accessLevel"`
 	StalePassword            bool              `json:"stalePassword"`
 	StreamerInfo             StreamerInfo      `json:"streamerInfo"`
-	professionalStatus       string            `json:"professionalStatus"` // "'PROFESSIONAL' or 'NON_PROFESSIONAL' or 'UNKNOWN_STATUS'",
+	ProfessionalStatus       string            `json:"professionalStatus"` // "'PROFESSIONAL' or 'NON_PROFESSIONAL' or 'UNKNOWN_STATUS'",
 	Quotes                   QuotesDelayed     `json:"quotes"`
 	StreamerSubscriptionKeys *SubscriptionKeys `json:"streamerSubscriptionKeys"`
 	Accounts                 []UPAccount       `json:"accounts"`

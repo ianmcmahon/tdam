@@ -27,7 +27,7 @@ type OptionChain struct {
 
 func (c *OptionChain) ExpirationDates() []ExpirationDate {
 	out := []ExpirationDate{}
-	for exp, _ := range c.RawCalls {
+	for exp := range c.RawCalls {
 		out = append(out, exp)
 	}
 	sort.Sort(byDTE(out))
@@ -40,7 +40,7 @@ func (c *OptionChain) StrikeTable(exp ExpirationDate) StrikeTable {
 	putMap := c.RawPuts[exp]
 	callMap := c.RawCalls[exp]
 
-	for price, _ := range callMap {
+	for price := range callMap {
 		table = append(table, Strike{
 			Price: price,
 			Call:  callMap[price],
@@ -85,16 +85,16 @@ type Option struct {
 	IsMini                 bool                 `json:"isMini"`
 	IsNonStandard          bool                 `json:"isNonStandard"`
 	OptionDeliverablesList []OptionDeliverables `json:"optionDeliverablesList"`
-	strikePrice            float64              `json:"strikePrice"`
-	expirationDate         string               `json:"expirationDate"`
-	expirationType         string               `json:"expirationType"`
-	multiplier             float64              `json:"multiplier"`
-	settlementType         string               `json:"settlementType"`
-	deliverableNote        string               `json:"deliverableNote"`
-	isIndexOption          bool                 `json:"isIndexOption"`
-	percentChange          float64              `json:"percentChange"`
-	markChange             float64              `json:"markChange"`
-	markPercentChange      float64              `json:"markPercentChange"`
+	StrikePrice            float64              `json:"strikePrice"`
+	ExpirationDate         string               `json:"expirationDate"`
+	ExpirationType         string               `json:"expirationType"`
+	Multiplier             float64              `json:"multiplier"`
+	SettlementType         string               `json:"settlementType"`
+	DeliverableNote        string               `json:"deliverableNote"`
+	IsIndexOption          bool                 `json:"isIndexOption"`
+	PercentChange          float64              `json:"percentChange"`
+	MarkChange             float64              `json:"markChange"`
+	MarkPercentChange      float64              `json:"markPercentChange"`
 }
 
 type StrikePrice float64
