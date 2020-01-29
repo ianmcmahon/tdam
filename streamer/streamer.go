@@ -26,7 +26,7 @@ const (
 
 type QoSLevel string
 type responseCallback func(resp response)
-type dataCallback func(resp Data)
+type dataCallback func(symbol string, resp Data)
 
 type Streamer struct {
 	tdamClient   *tdam.Client
@@ -218,10 +218,10 @@ func (s *Streamer) handleIncoming() {
 				if !ok {
 					continue
 				}
-				//fmt.Printf("dataCallbacks[%s][%s]: %v\n", data.Service, symbol, s.dataCallbacks[data.Service][symbol])
+				//fmt.Printf("dataCallbacks[%s][%s: %v\n", data.Service, symbol, s.dataCallbacks[data.Service][symbol])
 				callbacks := s.dataCallbacks[data.Service][symbol]
 				for _, cb := range callbacks {
-					cb(Data{data.Service, data.Command, data.Timestamp, []map[string]interface{}{packet}})
+					cb(symbol, Data{data.Service, data.Command, data.Timestamp, []map[string]interface{}{packet}})
 				}
 			}
 		}
