@@ -122,7 +122,7 @@ func (s *Streamer) Run() error {
 
 func (s *Streamer) QoS(level QoSLevel) error {
 
-	if err := s.sendRequest(s.qosRequest(), func(resp response) {
+	if err := s.sendRequest(s.qosRequest(level), func(resp response) {
 	}); err != nil {
 		log.Printf("error sending qos request: %v\n", err)
 		return err
