@@ -53,12 +53,16 @@ func New(client *tdam.Client) (*Streamer, error) {
 		wg:                &sync.WaitGroup{},
 		responseCallbacks: make(map[int]responseCallback),
 		dataCallbacks: map[string]map[string]map[string]dataCallback{
-			"QUOTE":  make(map[string]map[string]dataCallback),
-			"OPTION": make(map[string]map[string]dataCallback),
+			"QUOTE":                    make(map[string]map[string]dataCallback),
+			"OPTION":                   make(map[string]map[string]dataCallback),
+			"LEVELONE_FUTURES":         make(map[string]map[string]dataCallback),
+			"LEVELONE_FUTURES_OPTIONS": make(map[string]map[string]dataCallback),
 		},
 		subscribers: map[string]map[string][]string{
-			"QUOTE":  make(map[string][]string),
-			"OPTION": make(map[string][]string),
+			"QUOTE":                    make(map[string][]string),
+			"OPTION":                   make(map[string][]string),
+			"LEVELONE_FUTURES":         make(map[string][]string),
+			"LEVELONE_FUTURES_OPTIONS": make(map[string][]string),
 		},
 	}
 
@@ -140,7 +144,18 @@ func (s *Streamer) handleIncoming() {
 		}
 		for _, data := range resp.Data {
 			// data messages come from subscriptions.
-			fmt.Fprintf(dump, "%#v\n", data)
+			// need to find the list of subscribers for this service/symbol and notify all
+			for _, packet := range data.Content {
+				symbol, ok := packet["key"].(string)
+				if !ok {
+					continue
+				}
+				fmt.Printf("dataCallbacks[%s][%s]: %v\n", data.Service, symbol, s.dataCallbacks[data.Service][symbol])
+				callbacks := s.dataCallbacks[data.Service][symbol]
+				for _, cb := range callbacks {
+					cb(Data{data.Service, data.Command, data.Timestamp, []map[string]interface{}{packet}})
+				}
+			}
 		}
 	}
 }

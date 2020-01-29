@@ -10,6 +10,15 @@ func (s *Streamer) Subscribe(service string, subscriber string, symbols []string
 	// filter out any symbols already subscribed to
 	filteredSymbols := symbols[:0]
 	for _, symbol := range symbols {
+		// add our callback to it regardless
+		if _, ok := s.dataCallbacks[service][symbol]; !ok {
+			s.dataCallbacks[service][symbol] = make(map[string]dataCallback)
+		}
+		if _, ok := s.dataCallbacks[service][symbol][subscriber]; ok {
+			return fmt.Errorf("'%s' already subscribed to %s/%s.  Use a unique subscriber name!", subscriber, service, symbol)
+		}
+		s.dataCallbacks[service][symbol][subscriber] = cb
+
 		if !s.isSubscribed(service, symbol, subscriber) {
 			filteredSymbols = append(filteredSymbols, symbol)
 		}
