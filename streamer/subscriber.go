@@ -11,6 +11,7 @@ func (s *Streamer) Subscribe(service string, subscriber string, symbols []string
 	filteredSymbols := symbols[:0]
 	for _, symbol := range symbols {
 		// add our callback to it regardless
+		s.cbMutex.Lock()
 		if _, ok := s.dataCallbacks[service][symbol]; !ok {
 			s.dataCallbacks[service][symbol] = make(map[string]dataCallback)
 		}
@@ -18,9 +19,11 @@ func (s *Streamer) Subscribe(service string, subscriber string, symbols []string
 			return fmt.Errorf("'%s' already subscribed to %s/%s.  Use a unique subscriber name!", subscriber, service, symbol)
 		}
 		s.dataCallbacks[service][symbol][subscriber] = cb
+		s.cbMutex.Unlock()
 
 		if !s.isSubscribed(service, symbol, subscriber) {
 			filteredSymbols = append(filteredSymbols, symbol)
+			s.subscribers[service][symbol] = append(s.subscribers[service][symbol], subscriber)
 		}
 	}
 

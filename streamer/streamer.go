@@ -40,6 +40,7 @@ type Streamer struct {
 
 	// maps by-->    service     symbol    subscriber
 	dataCallbacks map[string]map[string]map[string]dataCallback
+	cbMutex       *sync.RWMutex
 
 	// maps by-->  service     symbol  subscriber
 	subscribers map[string]map[string][]string
@@ -62,6 +63,7 @@ func New(client *tdam.Client) (*Streamer, error) {
 		done:              make(chan bool),
 		requestCount:      0,
 		wg:                &sync.WaitGroup{},
+		cbMutex:           &sync.RWMutex{},
 		responseCallbacks: make(map[int]responseCallback),
 		dataCallbacks: map[string]map[string]map[string]dataCallback{
 			"QUOTE":                    make(map[string]map[string]dataCallback),
@@ -219,7 +221,9 @@ func (s *Streamer) handleIncoming() {
 					continue
 				}
 				//fmt.Printf("dataCallbacks[%s][%s: %v\n", data.Service, symbol, s.dataCallbacks[data.Service][symbol])
+				s.cbMutex.RLock()
 				callbacks := s.dataCallbacks[data.Service][symbol]
+				s.cbMutex.RUnlock()
 				for _, cb := range callbacks {
 					cb(symbol, Data{data.Service, data.Command, data.Timestamp, []map[string]interface{}{packet}})
 				}
