@@ -51,6 +51,21 @@ func (c *OptionChain) StrikeTable(exp ExpirationDate) StrikeTable {
 	return table
 }
 
+type EpochTime time.Time
+
+func (t EpochTime) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("%d", time.Time(t).Unix())), nil
+}
+
+func (t *EpochTime) UnmarshalJSON(b []byte) error {
+	secs, err := strconv.ParseUint(string(b), 10, 64)
+	if err != nil {
+		return err
+	}
+	*(*time.Time)(t) = time.Unix(int64(secs), 0)
+	return nil
+}
+
 type Option struct {
 	PutCall                string               `json:"putCall"`
 	Symbol                 string               `json:"symbol"`
@@ -86,7 +101,7 @@ type Option struct {
 	IsNonStandard          bool                 `json:"isNonStandard"`
 	OptionDeliverablesList []OptionDeliverables `json:"optionDeliverablesList"`
 	StrikePrice            float64              `json:"strikePrice"`
-	ExpirationDate         string               `json:"expirationDate"`
+	ExpirationDate         EpochTime            `json:"expirationDate"`
 	ExpirationType         string               `json:"expirationType"`
 	Multiplier             float64              `json:"multiplier"`
 	SettlementType         string               `json:"settlementType"`

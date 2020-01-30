@@ -59,9 +59,6 @@ func (c *Client) GetChain(symbol string, options url.Values) (*OptionChain, erro
 	options.Set("symbol", symbol)
 	req.URL.RawQuery = options.Encode()
 
-	//dump, _ := httputil.DumpRequest(req, false)
-	//fmt.Println(string(dump))
-
 	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Printf("%v\n", err)
