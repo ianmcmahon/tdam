@@ -71,6 +71,7 @@ func (c *Client) GetChain(symbol string, options url.Values) (*OptionChain, erro
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)
+	body = bytes.Replace(body, []byte("\"NaN\""), []byte("null"), -1)
 
 	var chain OptionChain
 	if err := json.NewDecoder(bytes.NewBuffer(body)).Decode(&chain); err != nil {
