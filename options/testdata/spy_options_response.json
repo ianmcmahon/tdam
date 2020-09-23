@@ -23574,7 +23574,7 @@
                     "tradeDate": null,
                     "tradeTimeInLong": 1580318941981,
                     "vega": 0.136,
-                    "volatility": 5.0
+                    "volatility": 0
                 }
             ]
         }

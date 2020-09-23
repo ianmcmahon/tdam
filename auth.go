@@ -132,7 +132,7 @@ func (c *Client) AuthHandler(w http.ResponseWriter, req *http.Request) {
 		fmt.Printf("error setting token: %v\n", err)
 		fmt.Fprintf(w, "error setting token: %v\n", err)
 	} else {
-		fmt.Fprintf(w, "token acquired! have fun")
+		fmt.Fprintf(w, "token acquired! have fun:  %v", token)
 	}
 }
 

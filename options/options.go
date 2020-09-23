@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+	"io/ioutil"
+  "bytes"
 
 	"github.com/ianmcmahon/tdam"
 )
@@ -68,8 +70,17 @@ func (c *Client) GetChain(symbol string, options url.Values) (*OptionChain, erro
 		fmt.Printf("status %d: %s\n", resp.StatusCode, resp.Status)
 	}
 
+	body, _ := ioutil.ReadAll(resp.Body)
+
 	var chain OptionChain
-	if err := json.NewDecoder(resp.Body).Decode(&chain); err != nil {
+	if err := json.NewDecoder(bytes.NewBuffer(body)).Decode(&chain); err != nil {
+		tmpdir, _ := ioutil.TempDir("/tmp", "tdam-debug-*")
+		tmpfile, _ := ioutil.TempFile(tmpdir, "*.json")
+		n, errr := tmpfile.Write(body)
+		if errr != nil {
+			fmt.Printf("error writing dumpfile: %v\n", errr)
+		}
+		fmt.Printf("logged (%d bytes) bad json to %s\n", n, tmpfile.Name())
 		return nil, err
 	}
 
