@@ -6,14 +6,14 @@ import (
 	"strings"
 )
 
-func (s *Streamer) Subscribe(service string, subscriber string, symbols []string, cb dataCallback) error {
+func (s *Streamer) Subscribe(service string, subscriber string, symbols []string, cb DataCallback) error {
 	// filter out any symbols already subscribed to
 	filteredSymbols := symbols[:0]
 	for _, symbol := range symbols {
 		// add our callback to it regardless
 		s.cbMutex.Lock()
 		if _, ok := s.dataCallbacks[service][symbol]; !ok {
-			s.dataCallbacks[service][symbol] = make(map[string]dataCallback)
+			s.dataCallbacks[service][symbol] = make(map[string]DataCallback)
 		}
 		if _, ok := s.dataCallbacks[service][symbol][subscriber]; ok {
 			return fmt.Errorf("'%s' already subscribed to %s/%s.  Use a unique subscriber name!", subscriber, service, symbol)

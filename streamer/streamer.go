@@ -26,7 +26,7 @@ const (
 
 type QoSLevel string
 type responseCallback func(resp response)
-type dataCallback func(symbol string, resp Data)
+type DataCallback func(symbol string, resp Data)
 
 type Streamer struct {
 	tdamClient   *tdam.Client
@@ -39,7 +39,7 @@ type Streamer struct {
 	responseCallbacks map[int]responseCallback // maps by requestID
 
 	// maps by-->    service     symbol    subscriber
-	dataCallbacks map[string]map[string]map[string]dataCallback
+	dataCallbacks map[string]map[string]map[string]DataCallback
 	cbMutex       *sync.RWMutex
 
 	// maps by-->  service     symbol  subscriber
@@ -65,11 +65,11 @@ func New(client *tdam.Client) (*Streamer, error) {
 		wg:                &sync.WaitGroup{},
 		cbMutex:           &sync.RWMutex{},
 		responseCallbacks: make(map[int]responseCallback),
-		dataCallbacks: map[string]map[string]map[string]dataCallback{
-			"QUOTE":                    make(map[string]map[string]dataCallback),
-			"OPTION":                   make(map[string]map[string]dataCallback),
-			"LEVELONE_FUTURES":         make(map[string]map[string]dataCallback),
-			"LEVELONE_FUTURES_OPTIONS": make(map[string]map[string]dataCallback),
+		dataCallbacks: map[string]map[string]map[string]DataCallback{
+			"QUOTE":                    make(map[string]map[string]DataCallback),
+			"OPTION":                   make(map[string]map[string]DataCallback),
+			"LEVELONE_FUTURES":         make(map[string]map[string]DataCallback),
+			"LEVELONE_FUTURES_OPTIONS": make(map[string]map[string]DataCallback),
 		},
 		subscribers: map[string]map[string][]string{
 			"QUOTE":                    make(map[string][]string),
