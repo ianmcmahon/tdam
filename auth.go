@@ -68,9 +68,7 @@ func (c *Client) TDAMToken() (string, error) {
 	if err != nil || refresh == "" {
 		fmt.Printf("Error fetching refresh token\n")
 
-		fmt.Println("1")
 		err := c.slogThroughOauthFlow()
-		fmt.Println("2")
 		if err != nil {
 			fmt.Println(err)
 			return "", err
