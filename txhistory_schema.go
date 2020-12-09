@@ -87,6 +87,11 @@ type Instrument struct {
 	BondInterestRate     string         `json:"bondInterestRate"`
 }
 
+func (t *Transaction) String() string {
+	i := t.TransactionItem
+	return fmt.Sprintf("%s to %s %.0f @ %.2f: %#v", i.Instruction, i.PositionEffect, i.Amount, i.Price, i.Instrument)
+}
+
 func (i *Instrument) String() string {
 	switch i.AssetType {
 	case OPTION:
