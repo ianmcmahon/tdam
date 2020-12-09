@@ -6,28 +6,30 @@ import (
 	"strings"
 )
 
-func (s *Streamer) Subscribe(service string, subscriber string, symbols []string, cb dataCallback) error {
+func (s *Streamer) Subscribe(service string, subscriber string, symbols []string, cb DataCallback) error {
 	// filter out any symbols already subscribed to
 	filteredSymbols := symbols[:0]
 	for _, symbol := range symbols {
 		// add our callback to it regardless
+		s.cbMutex.Lock()
 		if _, ok := s.dataCallbacks[service][symbol]; !ok {
-			s.dataCallbacks[service][symbol] = make(map[string]dataCallback)
+			s.dataCallbacks[service][symbol] = make(map[string]DataCallback)
 		}
 		if _, ok := s.dataCallbacks[service][symbol][subscriber]; ok {
 			return fmt.Errorf("'%s' already subscribed to %s/%s.  Use a unique subscriber name!", subscriber, service, symbol)
 		}
 		s.dataCallbacks[service][symbol][subscriber] = cb
+		s.cbMutex.Unlock()
 
 		if !s.isSubscribed(service, symbol, subscriber) {
 			filteredSymbols = append(filteredSymbols, symbol)
+			s.subscribers[service][symbol] = append(s.subscribers[service][symbol], subscriber)
 		}
 	}
 
 	if err := s.sendRequest(s.subRequest(service, filteredSymbols), func(resp response) {
-		fmt.Printf("sub registration callback: %v\n", resp)
+		//fmt.Printf("sub registration callback: %v\n", resp)
 	}); err != nil {
-
 		log.Printf("error sending subscribe request: %v\n", err)
 		return err
 	}

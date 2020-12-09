@@ -51,6 +51,21 @@ func (c *OptionChain) StrikeTable(exp ExpirationDate) StrikeTable {
 	return table
 }
 
+type EpochTime time.Time
+
+func (t EpochTime) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("%d", time.Time(t).Unix())), nil
+}
+
+func (t *EpochTime) UnmarshalJSON(b []byte) error {
+	secs, err := strconv.ParseUint(string(b), 10, 64)
+	if err != nil {
+		return err
+	}
+	*(*time.Time)(t) = time.Unix(int64(secs), 0)
+	return nil
+}
+
 type Option struct {
 	PutCall                string               `json:"putCall"`
 	Symbol                 string               `json:"symbol"`
@@ -71,12 +86,12 @@ type Option struct {
 	QuoteTimeInLong        float64              `json:"quoteTimeInLong"`
 	TradeTimeInLong        float64              `json:"tradeTimeInLong"`
 	NetChange              float64              `json:"netChange"`
-	Volatility             float64              `json:"volatility"`
-	Delta                  float64              `json:"delta"`
-	Gamma                  float64              `json:"gamma"`
-	Theta                  float64              `json:"theta"`
-	Vega                   float64              `json:"vega"`
-	Rho                    float64              `json:"rho"`
+	Volatility             float64       `json:"volatility"`
+	Delta                  float64       `json:"delta"`
+	Gamma                  float64       `json:"gamma"`
+	Theta                  float64       `json:"theta"`
+	Vega                   float64       `json:"vega"`
+	Rho                    float64       `json:"rho"`
 	TimeValue              float64              `json:"timeValue"`
 	OpenInterest           float64              `json:"openInterest"`
 	IsInTheMoney           bool                 `json:"isInTheMoney"`
@@ -86,7 +101,7 @@ type Option struct {
 	IsNonStandard          bool                 `json:"isNonStandard"`
 	OptionDeliverablesList []OptionDeliverables `json:"optionDeliverablesList"`
 	StrikePrice            float64              `json:"strikePrice"`
-	ExpirationDate         string               `json:"expirationDate"`
+	ExpirationDate         EpochTime            `json:"expirationDate"`
 	ExpirationType         string               `json:"expirationType"`
 	Multiplier             float64              `json:"multiplier"`
 	SettlementType         string               `json:"settlementType"`
@@ -95,6 +110,21 @@ type Option struct {
 	PercentChange          float64              `json:"percentChange"`
 	MarkChange             float64              `json:"markChange"`
 	MarkPercentChange      float64              `json:"markPercentChange"`
+}
+
+type NaNableFloat64 float64
+
+func (v *NaNableFloat64) UnmarshalText(b []byte) error {
+	if string(b) == "NaN" {
+		*v = NaNableFloat64(math.NaN())
+		return nil
+	}
+	f, err := strconv.ParseFloat(string(b), 64)
+	if err != nil {
+		return err
+	}
+	*v = NaNableFloat64(f)
+	return nil
 }
 
 type StrikePrice float64
@@ -126,12 +156,12 @@ func (s StrikeTable) NearestToDelta(d float64) (put, call Strike) {
 
 	for _, strike := range s {
 		if strike.DistToDelta(d) < put.DistToDelta(d) {
-			if math.Abs(strike.Put[0].Delta)-d < math.Abs(strike.Call[0].Delta)-d {
+			if math.Abs(float64(strike.Put[0].Delta))-d < math.Abs(float64(strike.Call[0].Delta))-d {
 				put = strike
 			}
 		}
 		if strike.DistToDelta(d) < call.DistToDelta(d) && strike.Call[0].Delta > 0 {
-			if math.Abs(strike.Put[0].Delta)-d > math.Abs(strike.Call[0].Delta)-d {
+			if math.Abs(float64(strike.Put[0].Delta))-d > math.Abs(float64(strike.Call[0].Delta))-d {
 				call = strike
 			}
 		}
@@ -143,15 +173,15 @@ func (s StrikeTable) NearestToDelta(d float64) (put, call Strike) {
 func (s Strike) DistToDelta(d float64) float64 {
 	c := s.Call[0]
 	p := s.Put[0]
-	return math.Abs(math.Min(math.Abs(c.Delta)-d, math.Abs(p.Delta)-d))
+	return math.Abs(math.Min(math.Abs(float64(c.Delta))-d, math.Abs(float64(p.Delta))-d))
 }
 
 func (s Strike) DeltaAbove(d float64) bool {
-	return math.Abs(s.Call[0].Delta) > d && math.Abs(s.Put[0].Delta) > d
+	return math.Abs(float64(s.Call[0].Delta)) > d && math.Abs(float64(s.Put[0].Delta)) > d
 }
 
 func (s Strike) DeltaBelow(d float64) bool {
-	return math.Abs(s.Call[0].Delta) < d || math.Abs(s.Put[0].Delta) < d
+	return math.Abs(float64(s.Call[0].Delta)) < d || math.Abs(float64(s.Put[0].Delta)) < d
 }
 
 func (s Strike) DeltaBetween(a, b float64) bool {

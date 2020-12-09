@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"os"
 	"sync"
 	"time"
 
@@ -26,7 +25,7 @@ const (
 
 type QoSLevel string
 type responseCallback func(resp response)
-type dataCallback func(resp Data)
+type DataCallback func(symbol string, resp Data)
 
 type Streamer struct {
 	tdamClient   *tdam.Client
@@ -39,7 +38,8 @@ type Streamer struct {
 	responseCallbacks map[int]responseCallback // maps by requestID
 
 	// maps by-->    service     symbol    subscriber
-	dataCallbacks map[string]map[string]map[string]dataCallback
+	dataCallbacks map[string]map[string]map[string]DataCallback
+	cbMutex       *sync.RWMutex
 
 	// maps by-->  service     symbol  subscriber
 	subscribers map[string]map[string][]string
@@ -62,12 +62,13 @@ func New(client *tdam.Client) (*Streamer, error) {
 		done:              make(chan bool),
 		requestCount:      0,
 		wg:                &sync.WaitGroup{},
+		cbMutex:           &sync.RWMutex{},
 		responseCallbacks: make(map[int]responseCallback),
-		dataCallbacks: map[string]map[string]map[string]dataCallback{
-			"QUOTE":                    make(map[string]map[string]dataCallback),
-			"OPTION":                   make(map[string]map[string]dataCallback),
-			"LEVELONE_FUTURES":         make(map[string]map[string]dataCallback),
-			"LEVELONE_FUTURES_OPTIONS": make(map[string]map[string]dataCallback),
+		dataCallbacks: map[string]map[string]map[string]DataCallback{
+			"QUOTE":                    make(map[string]map[string]DataCallback),
+			"OPTION":                   make(map[string]map[string]DataCallback),
+			"LEVELONE_FUTURES":         make(map[string]map[string]DataCallback),
+			"LEVELONE_FUTURES_OPTIONS": make(map[string]map[string]DataCallback),
 		},
 		subscribers: map[string]map[string][]string{
 			"QUOTE":                    make(map[string][]string),
@@ -109,7 +110,7 @@ func (s *Streamer) Run() error {
 
 		// successful login releases the waitlock
 		if v, ok := code.(float64); ok && v == 0.0 {
-			fmt.Printf("Login: code: %T %v\n", code, code)
+			//fmt.Printf("Login: code: %T %v\n", code, code)
 			s.wg.Done()
 		}
 	}); err != nil {
@@ -152,7 +153,7 @@ func (s *Streamer) Stop() error {
 		code := resp.Content["code"]
 
 		if v, ok := code.(float64); ok && v == 0.0 {
-			fmt.Printf("Logout: code: %T %v\n", code, code)
+			//fmt.Printf("Logout: code: %T %v\n", code, code)
 			s.done <- true
 		}
 	}); err != nil {
@@ -178,11 +179,11 @@ func (s *Streamer) logoutRequest() request {
 }
 
 func (s *Streamer) handleIncoming() {
-	dump, err := os.Create("streamdump.log")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer dump.Close()
+	//dump, err := os.Create("streamdump.log")
+	//if err != nil {
+	//		log.Fatal(err)
+	//}
+	//defer dump.Close()
 	for {
 		_, message, err := s.conn.ReadMessage()
 		if err != nil {
@@ -218,10 +219,12 @@ func (s *Streamer) handleIncoming() {
 				if !ok {
 					continue
 				}
-				fmt.Printf("dataCallbacks[%s][%s]: %v\n", data.Service, symbol, s.dataCallbacks[data.Service][symbol])
+				//fmt.Printf("dataCallbacks[%s][%s: %v\n", data.Service, symbol, s.dataCallbacks[data.Service][symbol])
+				s.cbMutex.RLock()
 				callbacks := s.dataCallbacks[data.Service][symbol]
+				s.cbMutex.RUnlock()
 				for _, cb := range callbacks {
-					cb(Data{data.Service, data.Command, data.Timestamp, []map[string]interface{}{packet}})
+					cb(symbol, Data{data.Service, data.Command, data.Timestamp, []map[string]interface{}{packet}})
 				}
 			}
 		}
@@ -244,7 +247,7 @@ func (s *Streamer) sendRequest(req request, cf responseCallback) error {
 		return err
 	}
 
-	log.Printf("sending req: %s\n", data)
+	//log.Printf("sending req: %s\n", data)
 	if err := s.conn.WriteMessage(websocket.TextMessage, data); err != nil {
 		log.Println("write:", err)
 		return err
