@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"os"
 	"sync"
 	"time"
 
@@ -111,7 +110,7 @@ func (s *Streamer) Run() error {
 
 		// successful login releases the waitlock
 		if v, ok := code.(float64); ok && v == 0.0 {
-			fmt.Printf("Login: code: %T %v\n", code, code)
+			//fmt.Printf("Login: code: %T %v\n", code, code)
 			s.wg.Done()
 		}
 	}); err != nil {
@@ -154,7 +153,7 @@ func (s *Streamer) Stop() error {
 		code := resp.Content["code"]
 
 		if v, ok := code.(float64); ok && v == 0.0 {
-			fmt.Printf("Logout: code: %T %v\n", code, code)
+			//fmt.Printf("Logout: code: %T %v\n", code, code)
 			s.done <- true
 		}
 	}); err != nil {
@@ -180,11 +179,11 @@ func (s *Streamer) logoutRequest() request {
 }
 
 func (s *Streamer) handleIncoming() {
-	dump, err := os.Create("streamdump.log")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer dump.Close()
+	//dump, err := os.Create("streamdump.log")
+	//if err != nil {
+	//		log.Fatal(err)
+	//}
+	//defer dump.Close()
 	for {
 		_, message, err := s.conn.ReadMessage()
 		if err != nil {
@@ -248,7 +247,7 @@ func (s *Streamer) sendRequest(req request, cf responseCallback) error {
 		return err
 	}
 
-	log.Printf("sending req: %s\n", data)
+	//log.Printf("sending req: %s\n", data)
 	if err := s.conn.WriteMessage(websocket.TextMessage, data); err != nil {
 		log.Println("write:", err)
 		return err

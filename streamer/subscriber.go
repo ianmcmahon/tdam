@@ -28,9 +28,8 @@ func (s *Streamer) Subscribe(service string, subscriber string, symbols []string
 	}
 
 	if err := s.sendRequest(s.subRequest(service, filteredSymbols), func(resp response) {
-		fmt.Printf("sub registration callback: %v\n", resp)
+		//fmt.Printf("sub registration callback: %v\n", resp)
 	}); err != nil {
-
 		log.Printf("error sending subscribe request: %v\n", err)
 		return err
 	}
