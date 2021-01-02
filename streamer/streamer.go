@@ -189,6 +189,8 @@ func (s *Streamer) handleIncoming() {
 		if err != nil {
 			log.Println("read:", err)
 			s.done <- true
+
+			panic(err) // TODO: panic here so that hopefully docker will restart us
 			return
 		}
 
@@ -202,7 +204,7 @@ func (s *Streamer) handleIncoming() {
 		// there's three (four really) possible responses in here
 		// is it possible that we get different types of response in one packet?
 		// maybe!  let's just spin through all of them and route the messages
-		//fmt.Printf("recv: %#v\n", resp)
+		// fmt.Printf("recv: %#v\n", resp)
 		for _, resp := range resp.Response {
 			// requests are submitted with a requestID, and the caller
 			// can attach a callback.  When we receive the response for that request,

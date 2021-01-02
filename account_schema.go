@@ -40,7 +40,15 @@ type SecuritiesAccount struct {
 func (a SecuritiesAccount) Positions() map[Symbol][]*Position {
 	out := make(map[Symbol][]*Position)
 	for _, p := range a.RawPositions {
-		sym := p.Instrument.UnderlyingSymbol
+		var sym Symbol
+		switch p.Instrument.AssetType {
+		case EQUITY:
+			sym = p.Instrument.Symbol
+		case OPTION:
+			sym = p.Instrument.UnderlyingSymbol
+		default:
+			panic(fmt.Errorf("Unhandled asset type: %#v", p.Instrument))
+		}
 		if _, ok := out[sym]; !ok {
 			out[sym] = make([]*Position, 0)
 		}

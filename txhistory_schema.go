@@ -50,8 +50,8 @@ type Transaction struct {
 	RequirementReallocationAmount float64          `json:"requirementReallocationAmount"`
 	DayTradeBPE                   float64          `json:"dayTradeBuyingPowerEffect"`
 	NetAmount                     float64          `json:"netAmount"`
-	TransactionDate               TDTime           `json:"transactionDate"`
-	OrderDate                     TDTime           `json:"orderDate"`
+	TransactionDate               string           `json:"transactionDate"`
+	OrderDate                     string           `json:"orderDate"`
 	TransactionSubType            string           `json:"transactionSubType"`
 	TransactionID                 int              `json:"transactionId"`
 	CashBalanceEffectFlag         bool             `json:"cashBalanceEffectFlag"`
@@ -87,8 +87,15 @@ type Instrument struct {
 	BondInterestRate     string         `json:"bondInterestRate"`
 }
 
+func (t *Transaction) String() string {
+	i := t.TransactionItem
+	return fmt.Sprintf("%s %s to %s %.0f @ %.2f: %#v", t.TransactionDate, i.Instruction, i.PositionEffect, i.Amount, i.Price, i.Instrument.String())
+}
+
 func (i *Instrument) String() string {
 	switch i.AssetType {
+	case EQUITY:
+		return fmt.Sprintf("%s", i.Symbol)
 	case OPTION:
 		return fmt.Sprintf("%s %s %g %s", i.UnderlyingSymbol,
 			i.OptionExpirationDate, i.OptionStrikePrice, i.PutCall)

@@ -188,11 +188,17 @@ func (c *Client) refreshToken(code string) (*TokenResponse, error) {
 	client := &http.Client{Transport: transport}
 
 	form := url.Values{
-		"grant_type":    []string{"refresh_token"},
-		"access_type":   []string{"offline"},
+		"grant_type": []string{"refresh_token"},
+		// as per https://developer.tdameritrade.com/authentication/apis/post/token-0
+		// 'Do not set to offline on a refresh_token grant type request.'
+		//	"access_type":   []string{"offline"},
 		"refresh_token": []string{code},
 		"client_id":     []string{c.ConsumerKey},
 		"redirect_uri":  []string{"https://localhost:8443/auth"},
+	}
+	// only set this on an initial request (ie without refresh_token)
+	if code == "" {
+		form.Set("access_type", "offline")
 	}
 
 	req, err := http.NewRequest("POST", tokenEndpoint, bytes.NewBuffer([]byte(form.Encode())))
