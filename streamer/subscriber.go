@@ -37,6 +37,37 @@ func (s *Streamer) Subscribe(service string, subscriber string, symbols []string
 	return nil
 }
 
+func (s *Streamer) SubscribeAcctActivity(subscriber string, cb DataCallback) error {
+	if _, ok := s.dataCallbacks["ACCT_ACTIVITY"]; !ok {
+		s.dataCallbacks["ACCT_ACTIVITY"] = make(map[string]map[string]DataCallback)
+	}
+
+	for _, account := range s.principal.Accounts[0:1] {
+		if _, ok := s.dataCallbacks["ACCT_ACTIVITY"][account.AccountId]; !ok {
+			s.dataCallbacks["ACCT_ACTIVITY"][account.AccountId] = make(map[string]DataCallback)
+		}
+		s.dataCallbacks["ACCT_ACTIVITY"][account.AccountId][subscriber] = cb
+		req := request{
+			Service:   "ACCT_ACTIVITY",
+			Command:   "SUBS",
+			RequestID: s.nextRequest(),
+			Account:   account.AccountId,
+			Source:    s.principal.StreamerInfo.AppId,
+			Parameters: map[string]string{
+				"keys":   (*s.principal.StreamerSubscriptionKeys)[0],
+				"fields": "0,1,2,3",
+			},
+		}
+		if err := s.sendRequest(req, func(resp response) {
+			fmt.Printf("subAcct: %#v\n", resp)
+		}); err != nil {
+			log.Printf("error sending account activity sub request: %v\n", err)
+			continue
+		}
+	}
+	return nil
+}
+
 func (s *Streamer) isSubscribed(service, symbol, subscriber string) bool {
 	if subs, ok := s.subscribers[service][symbol]; ok {
 		for _, sub := range subs {
